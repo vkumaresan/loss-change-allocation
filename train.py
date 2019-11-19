@@ -340,6 +340,7 @@ def main():
     BATCH_SIZE = 12
     CHANNEL_SIZE = 3
     NUM_EPOCHS = 60
+    IMG_DIM = 299
     TRAIN_DIR = 'train/'
     TEST_DIR = 'test/'
     FREEZE_LAYERS = 2  # freeze the first this many layers for training
