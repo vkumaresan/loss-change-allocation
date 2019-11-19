@@ -387,7 +387,7 @@ def main():
         class_mode="categorical",
         target_size=(IMG_DIM, IMG_DIM),
         subset='training',
-        shaffle=True,
+        shuffle=True,
         seed = SEED
         )
 
@@ -399,7 +399,7 @@ def main():
         class_mode="categorical",
         target_size=(IMG_DIM, IMG_DIM),
         subset='validation',
-        shaffle=True,
+        shuffle=True,
         seed = SEED
         )
 
