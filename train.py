@@ -34,6 +34,7 @@ from brook.tfutil import summarize_weights, summarize_opt, tf_assert_all_init, t
 #Added imports from Danny script:
 
 import pandas as pd
+import matplotlib.pyplot as plt
 import os
 import cv2
 import PIL
