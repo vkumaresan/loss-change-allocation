@@ -3,7 +3,7 @@ Copyright (c) 2019 Uber Technologies, Inc.
 
 Licensed under the Uber Non-Commercial License (the "License");
 you may not use this file except in compliance with the License.
-You may obtain a copy of the License at the root directory of this project. 
+You may obtain a copy of the License at the root directory of this project.
 
 See the License for the specific language governing permissions and
 limitations under the License.
@@ -22,6 +22,26 @@ from tensorflow.python import keras as tfkeras
 '''
 Methods to set up network architectures
 '''
+def build_basic_model(args):
+    return SequentialNetwork([
+        Conv2D(16, 2, padding='same', name='conv2D_1'),
+        # BatchNormalization(momentum=0.0, name='batch_norm_1'),
+        Activation('relu'),
+        MaxPooling2D((2, 2), (2, 2)),
+        Conv2D(32, 2, padding='same', name='conv2D_2'),
+        # BatchNormalization(momentum=0.0, name='batch_norm_2'),
+        Activation('relu'),
+        MaxPooling2D((2, 2), (2, 2)),
+        Conv2D(64, 2, padding='same', name='conv2D_3'),
+        Activation('relu'),
+        MaxPooling2D((2,2), (2,2)),
+        GlobalAveragePooling2D(),
+        Dense(1000, activation=relu),
+        Dropout(0.2),
+        Dense(1000, activation=relu, name='fc_1'),
+        Dropout(0.2),
+        Dense(5, activation= None, name='fc_2')
+    ])
 
 def build_lenet_conv(args): # ok this is a slightly modified lenet
     return SequentialNetwork([
@@ -45,7 +65,7 @@ def build_network_fc(args):
         Flatten(),
         Dense(100, kernel_initializer=he_normal, activation=relu, kernel_regularizer=l2reg(args.l2), name='fc_1'),
         Dense(50, kernel_initializer=he_normal, activation=relu, kernel_regularizer=l2reg(args.l2), name='fc_2'),
-        Dense(10, kernel_initializer=he_normal, activation=None, kernel_regularizer=l2reg(args.l2), name='fc_3')
+        Dense(5, kernel_initializer=he_normal, activation=None, kernel_regularizer=l2reg(args.l2), name='fc_3')
         # can also try kernel_initializer=tfkeras.initializers.TruncatedNormal(mean=0.0, stddev=0.1)
     ])
 
@@ -59,7 +79,7 @@ def build_network_fc_special(args):
         Dense(50, kernel_initializer=he_normal, activation=None, kernel_regularizer=l2reg(args.l2), name='fc_2'),
         BatchNormalization(momentum=0, name='batch_norm_1'),
         Activation('relu'),
-        Dense(10, kernel_initializer=he_normal, activation=None, kernel_regularizer=l2reg(args.l2), name='fc_3')
+        Dense(5, kernel_initializer=he_normal, activation=None, kernel_regularizer=l2reg(args.l2), name='fc_3')
     ])
 
 # Layer sizes are geometrically interpolated between 3072 and 10
