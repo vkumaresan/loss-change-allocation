@@ -87,6 +87,19 @@ def make_parser():
     parser.add_argument('--l2_special', type=float, default=0, help='only used for side resnet experiments')
     parser.add_argument('--resize_more', type=float, default=1, help='only used for side resnet experiments')
     parser.add_argument('--resize_less', type=float, default=1, help='only used for side resnet experiments')
+
+    # training params
+    parser.add_argument('--opt', type=str, default='sgd', choices=('sgd', 'rmsprop', 'adam'))
+    parser.add_argument('--lr', type=float, default=.01, help='suggested: .01 sgd, .001 rmsprop, .0001 adam')
+    parser.add_argument('--decay_schedule', type=str, default='-1', help='comma separated decay learning rate. allcnn: 200,250,300')
+    parser.add_argument('--mom', type=float, default=.9, help='momentum (only has effect for sgd/rmsprop)')
+    parser.add_argument('--l2', type=float, default=0)
+    parser.add_argument('--num_epochs', type=int, default=1, help='number of epochs')
+    parser.add_argument('--train_batch_size', type=int, default=12)
+    parser.add_argument('--large_batch_size', type=int, default=240, help='APTOS retinal images: 240')
+    parser.add_argument('--test_batch_size', type=int, default=0) # do 0 for all
+    parser.add_argument('--no_shuffle', action='store_true')
+    parser.add_argument('--shuffle_seed', type=int, default=-1, help='seed if you want to shuffle batches')
     parser.add_argument('--tf_seed', type=int, default=-1, help='tensorflow random seed')
 
     # adjust batch sizes for cifar:
