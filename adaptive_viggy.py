@@ -87,6 +87,7 @@ def make_parser():
     parser.add_argument('--l2_special', type=float, default=0, help='only used for side resnet experiments')
     parser.add_argument('--resize_more', type=float, default=1, help='only used for side resnet experiments')
     parser.add_argument('--resize_less', type=float, default=1, help='only used for side resnet experiments')
+    parser.add_argument('--tf_seed', type=int, default=-1, help='tensorflow random seed')
 
     # adjust batch sizes for cifar:
     parser.add_argument('--large_batch_size', type=int, default=11000, help='mnist: 11000, cifar: 5000')
