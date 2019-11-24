@@ -80,7 +80,7 @@ def make_parser():
     #parser.add_argument('--train_h5', type=str, required=True)
     #parser.add_argument('--test_h5', type=str, required=True)
     parser.add_argument('--input_dim', type=str, default='28,28,1', help='mnist: 28,28,1; cifar: 32,32,3')
-    parser.add_argument('--arch', type=str, default='fc', choices=('fc', 'fc_cust', 'lenet', 'allcnn', 'resnet', 'vgg'), help='network architecture')
+    parser.add_argument('--arch', type=str, default='basic', choices=('basic', 'fc', 'fc_cust', 'lenet', 'allcnn', 'resnet', 'vgg'), help='network architecture')
     parser.add_argument('--num_layers', type=int, default=3, help='number of layers for cifar fc')
     #parser.add_argument('--opt', type=str, default='sgd', choices=('sgd', 'rmsprop', 'adam'))
     #parser.add_argument('--l2', type=float, default=0)
