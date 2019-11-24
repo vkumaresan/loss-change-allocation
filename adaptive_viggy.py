@@ -180,7 +180,7 @@ def split_and_shape(one_time_slice, shapes):
 
 def get_gradients_and_eval(sess, model, y_shape, generator, dim_sum, batch_size, get_eval=True, get_grads=True):
     grad_sums = np.zeros(dim_sum)
-    num_batches = int(y_shape.shape[0] / batch_size)
+    num_batches = int(y_shape[0] / batch_size)
     total_acc = 0
     total_loss = 0
     total_loss_no_reg = 0 # loss without counting l2 penalty
