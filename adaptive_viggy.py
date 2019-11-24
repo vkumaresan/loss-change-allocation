@@ -82,8 +82,8 @@ def make_parser():
     parser.add_argument('--input_dim', type=str, default='28,28,1', help='mnist: 28,28,1; cifar: 32,32,3')
     parser.add_argument('--arch', type=str, default='fc', choices=('fc', 'fc_cust', 'lenet', 'allcnn', 'resnet', 'vgg'), help='network architecture')
     parser.add_argument('--num_layers', type=int, default=3, help='number of layers for cifar fc')
-    parser.add_argument('--opt', type=str, default='sgd', choices=('sgd', 'rmsprop', 'adam'))
-    parser.add_argument('--l2', type=float, default=0)
+    #parser.add_argument('--opt', type=str, default='sgd', choices=('sgd', 'rmsprop', 'adam'))
+    #parser.add_argument('--l2', type=float, default=0)
     parser.add_argument('--l2_special', type=float, default=0, help='only used for side resnet experiments')
     parser.add_argument('--resize_more', type=float, default=1, help='only used for side resnet experiments')
     parser.add_argument('--resize_less', type=float, default=1, help='only used for side resnet experiments')
@@ -103,8 +103,8 @@ def make_parser():
     parser.add_argument('--tf_seed', type=int, default=-1, help='tensorflow random seed')
 
     # adjust batch sizes for cifar:
-    parser.add_argument('--large_batch_size', type=int, default=11000, help='mnist: 11000, cifar: 5000')
-    parser.add_argument('--test_batch_size', type=int, default=0) # do 0 for all
+    #parser.add_argument('--large_batch_size', type=int, default=11000, help='mnist: 11000, cifar: 5000')
+    #parser.add_argument('--test_batch_size', type=int, default=0) # do 0 for all
 
     # params for calculating gradients:
     parser.add_argument('--num_gpus', type=int, default=1)
