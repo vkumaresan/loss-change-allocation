@@ -221,18 +221,18 @@ def get_gradients_and_eval(sess, model, y_shape, generator, dim_sum, batch_size,
 #################
 
 # loads weights, calculates train and test gradients, writes to file at given iteration
-def load_and_calculate(sess, model, weight_values, y_train_shape, y_test_shape, generator, dim_sum, args, get_eval=True):
+def load_and_calculate(sess, model, weight_values, y_train_shape, train_generator, y_test_shape, val_generator, dim_sum, args, get_eval=True):
     #train_x, train_y, test_x, test_y = input_data
     # load weights into model
     for i, w in enumerate(model.trainable_weights):
         w.load(weight_values[i], session=sess)
 
     # train set
-    cur_train_grads, cur_train_loss = get_gradients_and_eval(sess, model, y_train_shape, generator,
+    cur_train_grads, cur_train_loss = get_gradients_and_eval(sess, model, y_train_shape, train_generator,
         dim_sum, args.large_batch_size, get_eval, True)
 
     # test set
-    cur_test_grads, cur_test_loss = get_gradients_and_eval(sess, model, y_test_shape, generator,
+    cur_test_grads, cur_test_loss = get_gradients_and_eval(sess, model, y_test_shape, val_generator,
         dim_sum, args.test_batch_size, get_eval, True)
 
     return cur_train_grads, cur_train_loss, cur_test_grads, cur_test_loss
@@ -246,7 +246,7 @@ Every iteration, calculate and save gradients with these steps:
     4. Save dynamically sized chunk to file (future work: write in batches if this needs to be sped up)
     5. Also save number of gradients used
 '''
-def run_thread(gpu, iters_to_calc, all_weights, shapes, y_train_shape, y_test_shape, generator, dim_sum, args, dsets, hf_grads):
+def run_thread(gpu, iters_to_calc, all_weights, shapes, y_train_shape, train_generator, y_test_shape, val_generator, dim_sum, args, dsets, hf_grads):
     # each process writes to a different variable in the file
     grads_train_key = 'grads_train_{}'.format(gpu)
     grads_test_key = 'grads_test_{}'.format(gpu)
@@ -281,7 +281,7 @@ def run_thread(gpu, iters_to_calc, all_weights, shapes, y_train_shape, y_test_sh
     # get 0th iteration
     cur_weights_flat = all_weights[iters_to_calc[0]]
     (grads_train[0], cur_train_loss, grads_test[0], cur_test_loss) = load_and_calculate(
-        sess, model, split_and_shape(cur_weights_flat, shapes), y_train_shape, y_test_shape, generator, dim_sum, args)
+        sess, model, split_and_shape(cur_weights_flat, shapes), y_train_shape, train_generator, y_test_shape, val_generator, dim_sum, args)
     dsets['trainloss'][iters_to_calc[0]] = cur_train_loss
     dsets['testloss'][iters_to_calc[0]] = cur_test_loss
     dsets[grads_train_key][0] = grads_train[0]
@@ -292,11 +292,11 @@ def run_thread(gpu, iters_to_calc, all_weights, shapes, y_train_shape, y_test_sh
         # get next iteration gradients and loss, so we have a ground truth loss
         next_weights_flat = all_weights[iterations + 1]
         (grads_train[-1], next_train_loss, grads_test[-1], next_test_loss) = load_and_calculate(
-            sess, model, split_and_shape(next_weights_flat, shapes),y_train_shape, y_test_shape, generator , dim_sum, args)
+            sess, model, split_and_shape(next_weights_flat, shapes),y_train_shape, train_generator, y_test_shape, val_generator, dim_sum, args)
 
         # get the middle fractional iterations
         get_fractional_gradients(range(1, args.default_num_splits), args.default_num_splits, cur_weights_flat,
-            next_weights_flat, grads_train, grads_test, y_train_shape, y_test_shape, generator, shapes, sess, model, dim_sum, args) #1, or 1,2,3
+            next_weights_flat, grads_train, grads_test,y_train_shape, train_generator, y_test_shape, val_generator, shapes, sess, model, dim_sum, args) #1, or 1,2,3
 
         # tuple of (train loss diff, test loss diff)
         approx_errors = (calc_approx_error(cur_train_loss, next_train_loss, grads_train, next_weights_flat - cur_weights_flat),
@@ -314,7 +314,7 @@ def run_thread(gpu, iters_to_calc, all_weights, shapes, y_train_shape, y_test_sh
 
             # get quarter gradients, fill in the rest of grads_train_halved
             get_fractional_gradients(range(1, num_splits, 2), num_splits, cur_weights_flat, next_weights_flat,
-                grads_train_halved , grads_test_halved,y_train_shape, y_test_shape, generator, shapes, sess, model, dim_sum, args) # 1,3 or 1,3,5,7
+                grads_train_halved , grads_test_halved,y_train_shape, train_generator, y_test_shape, val_generator, shapes, sess, model, dim_sum, args) # 1,3 or 1,3,5,7
             grads_train = grads_train_halved
             grads_test = grads_test_halved
             approx_errors = (calc_approx_error(cur_train_loss, next_train_loss, grads_train, next_weights_flat - cur_weights_flat),
@@ -357,7 +357,7 @@ def calc_approx_error(cur_loss, next_loss, gradients, weight_deltas):
 # given weights at iterations (i, i+1), number of splits, and which fractions in between,
 # calculate and store those gradients
 def get_fractional_gradients(fractions, num_splits, cur_weights_flat, next_weights_flat,
-                             grads_train, grads_test, y_train_shape, y_test_shape, generator, shapes, sess, model, dim_sum, args):
+                             grads_train, grads_test, y_train_shape, train_generator, y_test_shape, val_generator, shapes, sess, model, dim_sum, args):
     # fractions should start at 1, not 0
     for frac in fractions:
         next_frac = frac / num_splits
@@ -366,7 +366,7 @@ def get_fractional_gradients(fractions, num_splits, cur_weights_flat, next_weigh
         partway_weights = split_and_shape(prev_frac * cur_weights_flat + next_frac * next_weights_flat, shapes)
 
         (grads_train[frac], _, grads_test[frac], _) = load_and_calculate(
-            sess, model, partway_weights, y_train_shape, y_test_shape, generator, dim_sum, args, get_eval=False)
+            sess, model, partway_weights, y_train_shape, train_generator, y_test_shape, val_generator, dim_sum, args, get_eval=False)
 
 # divide evenly except last range gets any remainders
 def divide_with_remainder(num_iters, num_gpus):
@@ -508,7 +508,7 @@ def main():
                     args, dsets, hf_grads))
             results.append(ret)
         else:
-            run_thread(gpu, iters_to_calc[gpu], all_weights, shapes, y_train_shape, y_test_shape, generator, dim_sum,
+            run_thread(gpu, iters_to_calc[gpu], all_weights, shapes, y_train_shape, train_generator, y_test_shape, val_generator, dim_sum,
                 args, dsets, hf_grads)
 
     pool.close()
