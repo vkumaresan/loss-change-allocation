@@ -79,7 +79,7 @@ def make_parser():
     parser.add_argument('--data_dir', type=str, required=True)
     #parser.add_argument('--train_h5', type=str, required=True)
     #parser.add_argument('--test_h5', type=str, required=True)
-    parser.add_argument('--input_dim', type=str, default='28,28,1', help='mnist: 28,28,1; cifar: 32,32,3')
+    parser.add_argument('--input_dim', type=tuple, default= (299,299,3))
     parser.add_argument('--arch', type=str, default='basic', choices=('basic', 'fc', 'fc_cust', 'lenet', 'allcnn', 'resnet', 'vgg'), help='network architecture')
     parser.add_argument('--num_layers', type=int, default=3, help='number of layers for cifar fc')
     #parser.add_argument('--opt', type=str, default='sgd', choices=('sgd', 'rmsprop', 'adam'))
@@ -87,6 +87,7 @@ def make_parser():
     parser.add_argument('--l2_special', type=float, default=0, help='only used for side resnet experiments')
     parser.add_argument('--resize_more', type=float, default=1, help='only used for side resnet experiments')
     parser.add_argument('--resize_less', type=float, default=1, help='only used for side resnet experiments')
+    parser.add_argument('--class_label_count', type=int)
 
     # training params
     parser.add_argument('--opt', type=str, default='sgd', choices=('sgd', 'rmsprop', 'adam'))
@@ -128,11 +129,11 @@ def make_parser():
 ################# model setup, after architecture is already created
 
 def init_model(model, args):
-    img_size = tuple([None] + [int(dim) for dim in args.input_dim.split(',')])
+    img_size = tuple([None] + [dim for dim in args.input_dim])
     input_images = tf.placeholder(dtype='float32', shape=img_size)
-    input_labels = tf.placeholder(dtype='int64', shape=(None,))
-    model.a('input_images', input_images)
-    model.a('input_labels', input_labels)
+    input_labels = tf.placeholder(dtype='int64', shape= [None, args.class_label_count])
+    model.a("input_images", input_images)
+    model.a("input_labels", input_labels)
     model.a('logits', model(input_images)) # logits is y_pred
 
 
